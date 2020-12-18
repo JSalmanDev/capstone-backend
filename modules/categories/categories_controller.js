@@ -77,6 +77,24 @@ class Categories {
         }
     }
 
+    deleteCategories() {
+        return (req, res) => { 
+            const { category_id } = req.body;
+            
+            if (!req.body || !category_id) {
+                return res.status(400).send({ msg: 'Bad Request' });
+            }
+
+            return categoriesModel.update({ is_deleted: true }, { where: { id: category_id } })
+                .then(result => {
+                    return res.status(200).send({ msg: 'Category Deleted Successfully' });
+                })
+                .catch(err => {
+                    console.log('Error in deleting specific category from db', err);
+                    return res.status(500).json({ msg: 'Internal Server Error', error: err });
+                });
+        }
+    }
 }
 
 module.exports = new Categories();
