@@ -91,6 +91,22 @@ class Users {
         }
     }
 
+    validateToken() {
+        return async(req, res) => {
+            let { token } = req.body;
+            if (!token) {
+                return res.status(400).send({ msg: 'Bad Request' });
+            }
+            try {
+                let decoded = jwt.verify(token, `${config.privateKey}`);
+                delete decoded.iat; delete decoded.exp;
+                return res.status(200).send({ msg: 'Verified Successfully', data: decoded });
+            } catch(err) {
+                return res.status(500).send({ msg: 'Internal Server Error', error: err });
+            }
+        }
+    }
+
 }
 
 module.exports = new Users();
