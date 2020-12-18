@@ -40,6 +40,20 @@ class Categories {
         }
     }
     
+    listCategories() {
+        return (req, res) => { 
+            return categoriesModel.findAndCountAll({ where: { is_deleted: false } })
+                .then(result => {
+                    let { count, rows } = result;
+                    return res.status(200).send({ count, data: rows });
+                })
+                .catch(err => {
+                    console.log('Error in listing user categories from db', err);
+                    return res.status(500).json({ msg: 'Internal Server Error', error: err });
+                });
+        }
+    }
+    
 }
 
 module.exports = new Categories();
