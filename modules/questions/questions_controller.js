@@ -36,6 +36,29 @@ class Questions {
         }
     }
     
+    specificQuestion() {
+        return (req, res) => { 
+            const { id, category_id } = req.params;
+            
+            if (!req.body ||!id ||!category_id) {
+                return res.status(400).send({ msg: 'Bad Request' });
+            }
+
+            return questionModel.findOne({ where: { id: id, category_id: category_id }, include: [ userModel, categoryModel, { model: answerModel, include: [userModel] } ] })
+                .then(result => {
+                    if (result) {
+                        return res.status(200).send({ data: result });
+                    } else {
+                        return res.status(404).send({ msg: 'Question not found against this Question ID' });
+                    }
+                })
+                .catch(err => {
+                    console.log('Error in listing specific question from db', err);
+                    return res.status(500).json({ msg: 'Internal Server Error', error: err });
+                });
+        }
+    }
+
 }
 
 module.exports = new Questions();
