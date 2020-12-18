@@ -43,6 +43,54 @@ class Users {
         }
     }
 
+    userLogin() {
+        return async (req, res) => {
+            let { email, password } = req.body;
+
+            if (!email ||!password) {
+                return res.status(400).send({ msg: 'Bad Request' });
+            }
+            
+            try {
+                const userExists = await userModel.findOne({ where: { email: email.toLowerCase() } });
+                if (userExists) {
+                    let validPasscode = await bcrypt.compareSync(password, userExists.password);
+                    if (validPasscode) {
+                        return jwt.sign({ id: userExists.id, status: userExists.status, role: userExists.role, firstName: userExists.first_name, lastName: userExists.last_name, email: userExists.email }, config.privateKey, { expiresIn: '30 days' }, function(err, token) {
+                            if (err) {
+                                console.log('Error in generating jwt token. ', err);
+                                res.status(500);
+                                return res.json({ msg: 'Internal Server Error', error: err });
+                            } else {
+                                res.status(200);
+                                return res.send({ 
+                                    token: token,
+                                    user: { 
+                                        id: userExists.id,
+                                        firstName: userExists.first_name, 
+                                        lastName: userExists.last_name, 
+                                        email: userExists.email, 
+                                        status: userExists.status,
+                                        role: userExists.role 
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        res.status(401);
+                        return res.send({ msg: 'Invalid Email or Password' });
+                    }
+                } else {
+                    res.status(404);
+                    return res.send({ msg: 'No user registered against this email' });
+                }
+            } catch (error) {
+                console.log('Error in user login', error);
+                return res.status(500).send({ msg: 'Internal Server Error', error });
+            }
+        }
+    }
+
 }
 
 module.exports = new Users();
