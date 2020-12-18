@@ -59,6 +59,24 @@ class Questions {
         }
     }
 
+    deleteQuestions() {
+        return (req, res) => { 
+            const { question_id } = req.body;
+            
+            if (!req.body || !question_id) {
+                return res.status(400).send({ msg: 'Bad Request' });
+            }
+
+            return questionModel.update({ is_deleted: true }, { where: { id: question_id } })
+                .then(result => {
+                    return res.status(200).send({ msg: 'Question Deleted Successfully' });
+                })
+                .catch(err => {
+                    console.log('Error in deleting specific question from db', err);
+                    return res.status(500).json({ msg: 'Internal Server Error', error: err });
+                });
+        }
+    }
 }
 
 module.exports = new Questions();
